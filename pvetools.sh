@@ -1676,10 +1676,10 @@ Your OS：$pve, you will install sensors interface, continue?(y/n)
             bver=`echo $ppv|awk -F'/' 'NR==1{print $2}'|awk -F'.' '{print $1}'`
             pve=$OS$ver
             mkdir /etc/pvetools/
-            if [ ! -f $js ];then
+            if [ ! -f /etc/pvetools/pvemanagerlib.js ];then
                 cp $js /etc/pvetools/pvemanagerlib.js
             fi
-            if [ ! -f $pm ];then
+            if [ ! -f /etc/pvetools/Nodes.pm ];then
                 cp $pm /etc/pvetools/Nodes.pm
             fi
             if [[ "$OS" != "pve" ]];then
@@ -1780,7 +1780,7 @@ Install complete,if everything ok ,it\'s showed sensors.Next, restart you web.
                 " 20 60
             rm /tmp/sensors
             cat << EOF > /usr/bin/s.sh
-r=\`sensors|grep -E 'Package id 0|fan|Physical id 0|Core'|grep '^[a-zA-Z0-9].[[:print:]]*:.\s*\S*[0-9].\s*[A-Z].' -o|sed 's/:\ */:/g'|sed 's/:/":"/g'|sed 's/^/"/g' |sed 's/$/",/g'|sed 's/\ C\ /C/g'|sed 's/\ V\ /V/g'|sed 's/\ RP/RPM/g'|sed 's/\ //g'|awk 'BEGIN{ORS=""}{print \$0}'|sed 's/\,\$//g'|sed 's/°C/\&degC/g'\`
+r=\`sensors|grep -E 'Package id 0|fan|Physical id 0|Core|CPUTIN|AUXTIN0'|grep '^[a-zA-Z0-9].[[:print:]]*:.\s*\S*[0-9].\s*[A-Z].' -o|sed 's/:\ */:/g'|sed 's/:/":"/g'|sed 's/^/"/g' |sed 's/$/",/g'|sed 's/\ C\ /C/g'|sed 's/\ V\ /V/g'|sed 's/\ RP/RPM/g'|sed 's/\ //g'|awk 'BEGIN{ORS=""}{print \$0}'|sed 's/\,\$//g'|sed 's/°C/\&degC/g'\`
 c=\`lscpu|grep MHz|sed 's/CPU\ /CPU-/g'|sed 's/\ MHz/-MHz/g'|sed 's/\ //g'|sed 's/^/"/g'|sed 's/$/"\,/g'|sed 's/\:/\"\:\"/g'|awk 'BEGIN{ORS=""}{print \$0}'|sed 's/\,\$//g'\`
 r="{"\$r","\$c"}"
 echo \$r
@@ -1788,7 +1788,7 @@ EOF
             chmod +x /usr/bin/s.sh
             #--create the configs--
             #--filter for sensors 过滤sensors项目--
-            d=`sensors|grep -E 'Package id 0|fan|Physical id 0|Core'|grep '^[a-zA-Z0-9].[[:print:]]*:.\s*\S*[0-9].\s*[A-Z].' -o|sed 's/:\ */:/g'|sed 's/\ C\ /C/g'|sed 's/\ V\ /V/g'|sed 's/\ RP/RPM/g'|sed 's/\ //g'|awk -F ":" '{print $1}'`
+            d=`sensors|grep -E 'Package id 0|fan|Physical id 0|Core|CPUTIN|AUXTIN0'|grep '^[a-zA-Z0-9].[[:print:]]*:.\s*\S*[0-9].\s*[A-Z].' -o|sed 's/:\ */:/g'|sed 's/\ C\ /C/g'|sed 's/\ V\ /V/g'|sed 's/\ RP/RPM/g'|sed 's/\ //g'|awk -F ":" '{print $1}'`
             if [ -f ./p1 ];then rm ./p1;fi
             #--这里插入cpu频率　add cpu MHz--
             cat << EOF >> ./p1
@@ -1809,12 +1809,6 @@ EOF
 EOF
             #--插入cpu频率结束　add cpu MHz end--
             cat << EOF >> ./p1
-        ,{
-            xtype: 'box',
-            colspan: 2,
-        title: gettext('Sensors Data:'),
-            padding: '0 0 20 0'
-        }
         ,{
             itemId: 'Sensors',
             colspan: 2,
